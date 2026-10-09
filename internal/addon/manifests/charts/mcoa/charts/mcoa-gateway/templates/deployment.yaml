@@ -145,6 +145,7 @@ spec:
             - '--tls.healthchecks.server-name=mcoa-observability-observatorium-api.open-cluster-management-observability.svc'
             - '--tls.healthchecks.client-cert-file=/var/run/tls/tls.crt'
             - '--tls.healthchecks.client-key-file=/var/run/tls/tls.key'
+            - '--tls.reload-interval=1m'
             - '--metrics.write-timeout=5m'
             - '--server.read-header-timeout=10s'
             {{- if .Values.logsEnabled }}

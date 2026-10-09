@@ -189,15 +189,15 @@ func (r *ResourceCreatorReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		}
 
 		certObjs := []client.Object{}
-		// Server cert SAN needs the Route host. Skip apply until it exists so
-		// cert-manager does not issue a cert that collectors cannot use for TLS.
-		if gatewayHost != "" {
-			serverCert, err := mcoagateway.BuildServerCertificate(gatewayHost)
-			if err != nil {
-				return ctrl.Result{}, fmt.Errorf("failed to build MCOA gateway server certificate: %w", err)
-			}
-			certObjs = append(certObjs, serverCert)
+		// Create the server certificate even before the Route exists. Its service
+		// DNS SANs let the gateway and Route bootstrap; the Route watch will
+		// requeue this controller and add the Route host SAN afterward.
+		// If creation of server cert is blocked, will block mcoa-gateway creation
+		serverCert, err := mcoagateway.BuildServerCertificate(gatewayHost)
+		if err != nil {
+			return ctrl.Result{}, fmt.Errorf("failed to build MCOA gateway server certificate: %w", err)
 		}
+		certObjs = append(certObjs, serverCert)
 
 		if opts.Platform.Logs.DefaultStack {
 			lokiClientCert, err := mcoagateway.BuildLokiClientCertificate()
